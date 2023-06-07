@@ -15,13 +15,43 @@ chat.addEventListener("submit", function (e) {
 });
 
 async function postNewMsg(user, text) {
-  // post to /poll a new message
-  // write code here
+  const data = {
+    user,
+    text
+  }
+
+  const options = {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+
+  await fetch('/poll', options)
+  // const res = await fetch('/poll', options)
+  // const json = await res.headers()
 }
 
 async function getNewMsgs() {
-  // poll the server
-  // write code here
+  let json;
+  try {
+    const res = await fetch('/poll');
+    json =await res.json();
+
+    if (res.status >=400) {
+      throw new Error('request did not success:' + res.status)
+    }
+
+    allChat = json.msg;
+    render();
+    failedTries = 0;
+  } catch(e) {
+    console.error('polling error', e)
+    failedTries++;
+  }
+  
+  // setTimeout(getNewMsgs, INTERVAL);
 }
 
 function render() {
@@ -37,5 +67,20 @@ function render() {
 const template = (user, msg) =>
   `<li class="collection-item"><span class="badge">${user}</span>${msg}</li>`;
 
-// make the first request
-getNewMsgs();
+// // make the first request
+// getNewMsgs();
+
+const BACKOFF = 5000; // 5 secs with linear backoff
+let timeToMakeNextRequest = 0
+let failedTries = 0
+async function rafTimer(time) {
+  // `time`: provided back from `requestAnimationFrame`
+  if (timeToMakeNextRequest <= time) {
+    await getNewMsgs();
+    timeToMakeNextRequest = time + INTERVAL + failedTries * BACKOFF
+    // timeToMakeNextRequest = Date.now() + INTERVAL // not be ran behind
+  }
+
+  requestAnimationFrame(rafTimer)
+}
+requestAnimationFrame(rafTimer)
