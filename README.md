@@ -76,3 +76,17 @@ library?
 
 - does so much better
 - edge cases are covered
+
+socket.io
+
+- "messaging busing system"
+- for bigger projects
+- establishes connection
+- direct connection to MongoDB
+- auto-reconnect lost connection
+- "transport=polling" fallback if browser doesnt support WebSocket
+
+WebRTC: peer-to-peer communication rather than client-server
+SignalR: .NET
+
+> auto-checks slow client, then move processing to the server, then send the result to the client

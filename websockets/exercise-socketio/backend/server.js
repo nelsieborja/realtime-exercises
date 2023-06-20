@@ -19,11 +19,31 @@ const server = http.createServer((request, response) => {
   });
 });
 
-/*
- *
- * Code goes here
- *
- */
+const io = new Server(server, {});
+
+io.on("connection", (socket) => {
+  console.log(`connected: ${socket.id}`);
+
+  // "msg:get" - name of event
+  // `msg:` just a message namespace
+  socket.emit("msg:get", { msg: getMsgs() });
+
+  socket.on("disconnect", () => {
+    console.log(`disconnected: ${socket.id}`);
+  });
+
+  socket.on("msg:post", (data) => {
+    msg.push({
+      user: data.user,
+      text: data.text,
+      time: Date.now(),
+    });
+
+    // Use `io` to broadcast to the entire server;
+    // `socket` is just s single connection
+    io.emit("mgs:get", { msg: getMsgs() });
+  });
+});
 
 const port = process.env.PORT || 8080;
 server.listen(port, () =>
